@@ -140,9 +140,11 @@ public class ZebraBluetoothPrinter extends CordovaPlugin implements DiscoveryHan
         new Thread(new Runnable() {
             @Override
             public void run() {
+                Connection thePrinterConn = null;
+
                 try {
 
-                    Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
+                    thePrinterConn = new BluetoothConnectionInsecure(mac);
 
                     Looper.prepare();
 
@@ -172,10 +174,19 @@ public class ZebraBluetoothPrinter extends CordovaPlugin implements DiscoveryHan
                     }
 
                     thePrinterConn.close();
+                    thePrinterConn = null;
 
                     Looper.myLooper().quit();
                 } catch (Exception e){
                     callbackContext.error(e.getMessage());
+                } finally {
+                    if(thePrinterConn != null) {
+                        try {
+                            thePrinterConn.close();
+                        } catch (Exception ex) {
+                            callbackContext.error(ex.getMessage());
+                        }
+                    }
                 }
             }
         }).start();
@@ -190,10 +201,12 @@ public class ZebraBluetoothPrinter extends CordovaPlugin implements DiscoveryHan
         new Thread(new Runnable() {
             @Override
             public void run() {
+                Connection thePrinterConn = null;
+
                 try {
 
                     // Instantiate insecure connection for given Bluetooth MAC Address.
-                    Connection thePrinterConn = new BluetoothConnectionInsecure(mac);
+                    thePrinterConn = new BluetoothConnectionInsecure(mac);
 
                     // if (isPrinterReady(thePrinterConn)) {
 
@@ -208,6 +221,7 @@ public class ZebraBluetoothPrinter extends CordovaPlugin implements DiscoveryHan
 
                     // Close the insecure connection to release resources.
                     thePrinterConn.close();
+                    thePrinterConn = null;
 
                     Looper.myLooper().quit();
                     callbackContext.success("Done");
@@ -218,6 +232,14 @@ public class ZebraBluetoothPrinter extends CordovaPlugin implements DiscoveryHan
                 } catch (Exception e) {
                     // Handle communications error here.
                     callbackContext.error(e.getMessage());
+                } finally {
+                    if(thePrinterConn != null) {
+                        try {
+                            thePrinterConn.close();
+                        } catch (Exception ex) {
+                            callbackContext.error(ex.getMessage());
+                        }
+                    }
                 }
             }
         }).start();
